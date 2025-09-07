@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 20px;
+        }
+
+        .calculator {
+            background: rgba(20, 20, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 520px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .display {
+            background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mode-indicator {
+            color: #4fc3f7;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .angle-mode {
+            background: rgba(79, 195, 247, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .previous-operand {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1rem;
+            min-height: 20px;
+            text-align: right;
+            word-wrap: break-word;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+
+        .current-operand {
+            color: #4fc3f7;
+            font-size: 2.2rem;
+            text-align: right;
+            font-weight: 300;
+            min-height: 50px;
+            word-wrap: break-word;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 20px rgba(79, 195, 247, 0.5);
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            padding: 18px 5px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        button:hover::before {
+            width: 100px;
+            height: 100px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(79, 195, 247, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(79, 195, 247, 0.2);
+        }
+
+        .number {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            font-size: 1.2rem;
+        }
+
+        .number:hover {
+            background: rgba(79, 195, 247, 0.2);
+        }
+
+        .operator {
+            background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+            color: white;
+        }
+
+        .operator:hover {
+            background: linear-gradient(135deg, #29b6f6, #4fc3f7);
+        }
+
+        .scientific {
+            background: linear-gradient(135deg, #7e57c2, #5e35b1);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .scientific:hover {
+            background: linear-gradient(135deg, #5e35b1, #7e57c2);
+        }
+
+        .trig {
+            background: linear-gradient(135deg, #26a69a, #00897b);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .trig:hover {
+            background: linear-gradient(135deg, #00897b, #26a69a);
+        }
+
+        .equals {
+            background: linear-gradient(135deg, #ff6b6b, #f06292);
+            color: white;
+            grid-column: span 2;
+        }
+
+        .equals:hover {
+            background: linear-gradient(135deg, #f06292, #ff6b6b);
+            box-shadow: 0 5px 25px rgba(240, 98, 146, 0.4);
+        }
+
+        .clear {
+            background: linear-gradient(135deg, #ff8a65, #ff7043);
+            color: white;
+        }
+
+        .clear:hover {
+            background: linear-gradient(135deg, #ff7043, #ff8a65);
+        }
+
+        .memory {
+            background: linear-gradient(135deg, #ffd54f, #ffca28);
+            color: #333;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .memory:hover {
+            background: linear-gradient(135deg, #ffca28, #ffd54f);
+        }
+
+        .constant {
+            background: linear-gradient(135deg, #81c784, #66bb6a);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .constant:hover {
+            background: linear-gradient(135deg, #66bb6a, #81c784);
+        }
+
+        .mode-toggle {
+            background: linear-gradient(135deg, #64b5f6, #42a5f5);
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .mode-toggle:hover {
+            background: linear-gradient(135deg, #42a5f5, #64b5f6);
+        }
+
+        .span-two {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 500px) {
+            .calculator {
+                padding: 15px;
+            }
+            
+            button {
+                padding: 14px 3px;
+                font-size: 0.85rem;
+            }
+            
+            .current-operand {
+                font-size: 1.8rem;
+            }
+
+            .buttons {
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">
+            <div class="mode-indicator">
+                <span>SCIENTIFIC MODE</span>
+                <span class="angle-mode" id="angleMode">DEG</span>
+            </div>
+            <div class="previous-operand" id="previousOperand"></div>
+            <div class="current-operand" id="currentOperand">0</div>
+        </div>
+        <div class="buttons">
+            <!-- Row 1 -->
+            <button class="mode-toggle" onclick="calculator.toggleAngleMode()">DEG/RAD</button>
+            <button class="memory" onclick="calculator.memoryStore()">MS</button>
+            <button class="memory" onclick="calculator.memoryRecall()">MR</button>
+            <button class="memory" onclick="calculator.memoryClear()">MC</button>
+            <button class="memory" onclick="calculator.memoryAdd()">M+</button>
+            
+            <!-- Row 2 -->
+            <button class="scientific" onclick="calculator.factorial()">n!</button>
+            <button class="scientific" onclick="calculator.chooseOperation('nCr')">nCr</button>
+            <button class="scientific" onclick="calculator.chooseOperation('nPr')">nPr</button>
+            <button class="clear" onclick="calculator.clear()">AC</button>
+            <button class="clear" onclick="calculator.delete()">DEL</button>
+            
+            <!-- Row 3 -->
+            <button class="trig" onclick="calculator.sin()">sin</button>
+            <button class="trig" onclick="calculator.cos()">cos</button>
+            <button class="trig" onclick="calculator.tan()">tan</button>
+            <button class="scientific" onclick="calculator.log()">log</button>
+            <button class="scientific" onclick="calculator.ln()">ln</button>
+            
+            <!-- Row 4 -->
+            <button class="trig" onclick="calculator.asin()">sin⁻¹</button>
+            <button class="trig" onclick="calculator.acos()">cos⁻¹</button>
+            <button class="trig" onclick="calculator.atan()">tan⁻¹</button>
+            <button class="scientific" onclick="calculator.exp()">eˣ</button>
+            <button class="scientific" onclick="calculator.power10()">10ˣ</button>
+            
+            <!-- Row 5 -->
+            <button class="scientific" onclick="calculator.sqrt()">√</button>
+            <button class="scientific" onclick="calculator.cbrt()">∛</button>
+            <button class="scientific" onclick="calculator.chooseOperation('^')">xʸ</button>
+            <button class="scientific" onclick="calculator.chooseOperation('√')">ʸ√x</button>
+            <button class="scientific" onclick="calculator.inverse()">1/x</button>
+            
+            <!-- Row 6 -->
+            <button class="constant" onclick="calculator.pi()">π</button>
+            <button class="constant" onclick="calculator.e()">e</button>
+            <button class="scientific" onclick="calculator.square()">x²</button>
+            <button class="scientific" onclick="calculator.cube()">x³</button>
+            <button class="scientific" onclick="calculator.abs()">|x|</button>
+            
+            <!-- Row 7 -->
+            <button class="number" onclick="calculator.appendNumber('7')">7</button>
+            <button class="number" onclick="calculator.appendNumber('8')">8</button>
+            <button class="number" onclick="calculator.appendNumber('9')">9</button>
+            <button class="operator" onclick="calculator.chooseOperation('÷')">÷</button>
+            <button class="scientific" onclick="calculator.chooseOperation('mod')">mod</button>
+            
+            <!-- Row 8 -->
+            <button class="number" onclick="calculator.appendNumber('4')">4</button>
+            <button class="number" onclick="calculator.appendNumber('5')">5</button>
+            <button class="number" onclick="calculator.appendNumber('6')">6</button>
+            <button class="operator" onclick="calculator.chooseOperation('×')">×</button>
+            <button class="scientific" onclick="calculator.percentage()">%</button>
+            
+            <!-- Row 9 -->
+            <button class="number" onclick="calculator.appendNumber('1')">1</button>
+            <button class="number" onclick="calculator.appendNumber('2')">2</button>
+            <button class="number" onclick="calculator.appendNumber('3')">3</button>
+            <button class="operator" onclick="calculator.chooseOperation('-')">−</button>
+            <button class="scientific" onclick="calculator.negate()">±</button>
+            
+            <!-- Row 10 -->
+            <button class="number" onclick="calculator.appendNumber('0')">0</button>
+            <button class="number" onclick="calculator.appendNumber('.')">.</button>
+            <button class="scientific" onclick="calculator.scientificNotation()">EXP</button>
+            <button class="operator" onclick="calculator.chooseOperation('+')">+</button>
+            <button class="equals" onclick="calculator.compute()">=</button>
+        </div>
+    </div>
+
+    <script>
+        class ScientificCalculator {
+            constructor(previousOperandElement, currentOperandElement, angleModeElement) {
+                this.previousOperandElement = previousOperandElement;
+                this.currentOperandElement = currentOperandElement;
+                this.angleModeElement = angleModeElement;
+                this.memory = 0;
+                this.angleMode = 'DEG'; // DEG or RAD
+                this.clear();
+            }
+
+            clear() {
+                this.currentOperand = '0';
+                this.previousOperand = '';
+                this.operation = undefined;
+                this.updateDisplay();
+            }
+
+            delete() {
+                if (this.currentOperand === '0') return;
+                this.currentOperand = this.currentOperand.toString().slice(0, -1);
+                if (this.currentOperand === '' || this.currentOperand === '-') {
+                    this.currentOperand = '0';
+                }
+                this.updateDisplay();
+            }
+
+            appendNumber(number) {
+                if (number === '.' && this.currentOperand.includes('.')) return;
+                if (this.currentOperand === '0' && number !== '.') {
+                    this.currentOperand = number;
+                } else {
+                    this.currentOperand = this.currentOperand.toString() + number.toString();
+                }
+                this.updateDisplay();
+            }
+
+            chooseOperation(operation) {
+                if (this.currentOperand === '') return;
+                if (this.previousOperand !== '') {
+                    this.compute();
+                }
+                this.operation = operation;
+                this.previousOperand = this.currentOperand;
+                this.currentOperand = '0';
+                this.updateDisplay();
+            }
+
+            compute() {
+                let computation;
+                const prev = parseFloat(this.previousOperand);
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(prev) || isNaN(current)) return;
+                
+                switch (this.operation) {
+                    case '+':
+                        computation = prev + current;
+                        break;
+                    case '-':
+                        computation = prev - current;
+                        break;
+                    case '×':
+                        computation = prev * current;
+                        break;
+                    case '÷':
+                        if (current === 0) {
+                            this.currentOperand = 'Error';
+                            this.previousOperand = '';
+                            this.operation = undefined;
+                            this.updateDisplay();
+                            return;
+                        }
+                        computation = prev / current;
+                        break;
+                    case '^':
+                        computation = Math.pow(prev, current);
+                        break;
+                    case '√':
+                        if (prev < 0 && current % 2 === 0) {
+                            this.currentOperand = 'Error';
+                            this.previousOperand = '';
+                            this.operation = undefined;
+                            this.updateDisplay();
+                            return;
+                        }
+                        computation = Math.pow(prev, 1/current);
+                        break;
+                    case 'mod':
+                        computation = prev % current;
+                        break;
+                    case 'nCr':
+                        computation = this.combination(prev, current);
+                        break;
+                    case 'nPr':
+                        computation = this.permutation(prev, current);
+                        break;
+                    default:
+                        return;
+                }
+                
+                this.currentOperand = computation.toString();
+                this.operation = undefined;
+                this.previousOperand = '';
+                this.updateDisplay();
+            }
+
+            // Trigonometric functions
+            sin() {
+                let value = parseFloat(this.currentOperand);
+                if (this.angleMode === 'DEG') {
+                    value = value * Math.PI / 180;
+                }
+                this.currentOperand = Math.sin(value).toString();
+                this.updateDisplay();
+            }
+
+            cos() {
+                let value = parseFloat(this.currentOperand);
+                if (this.angleMode === 'DEG') {
+                    value = value * Math.PI / 180;
+                }
+                this.currentOperand = Math.cos(value).toString();
+                this.updateDisplay();
+            }
+
+            tan() {
+                let value = parseFloat(this.currentOperand);
+                if (this.angleMode === 'DEG') {
+                    value = value * Math.PI / 180;
+                }
+                this.currentOperand = Math.tan(value).toString();
+                this.updateDisplay();
+            }
+
+            asin() {
+                let value = parseFloat(this.currentOperand);
+                if (value < -1 || value > 1) {
+                    this.currentOperand = 'Error';
+                } else {
+                    let result = Math.asin(value);
+                    if (this.angleMode === 'DEG') {
+                        result = result * 180 / Math.PI;
+                    }
+                    this.currentOperand = result.toString();
+                }
+                this.updateDisplay();
+            }
+
+            acos() {
+                let value = parseFloat(this.currentOperand);
+                if (value < -1 || value > 1) {
+                    this.currentOperand = 'Error';
+                } else {
+                    let result = Math.acos(value);
+                    if (this.angleMode === 'DEG') {
+                        result = result * 180 / Math.PI;
+                    }
+                    this.currentOperand = result.toString();
+                }
+                this.updateDisplay();
+            }
+
+            atan() {
+                let value = parseFloat(this.currentOperand);
+                let result = Math.atan(value);
+                if (this.angleMode === 'DEG') {
+                    result = result * 180 / Math.PI;
+                }
+                this.currentOperand = result.toString();
+                this.updateDisplay();
+            }
+
+            // Logarithmic functions
+            log() {
+                const current = parseFloat(this.currentOperand);
+                if (current <= 0) {
+                    this.currentOperand = 'Error';
+                } else {
+                    this.currentOperand = Math.log10(current).toString();
+                }
+                this.updateDisplay();
+            }
+
+            ln() {
+                const current = parseFloat(this.currentOperand);
+                if (current <= 0) {
+                    this.currentOperand = 'Error';
+                } else {
+                    this.currentOperand = Math.log(current).toString();
+                }
+                this.updateDisplay();
+            }
+
+            exp() {
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = Math.exp(current).toString();
+                this.updateDisplay();
+            }
+
+            power10() {
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = Math.pow(10, current).toString();
+                this.updateDisplay();
+            }
+
+            // Power and root functions
+            sqrt() {
+                const current = parseFloat(this.currentOperand);
+                if (current < 0) {
+                    this.currentOperand = 'Error';
+                } else {
+                    this.currentOperand = Math.sqrt(current).toString();
+                }
+                this.updateDisplay();
+            }
+
+            cbrt() {
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = Math.cbrt(current).toString();
+                this.updateDisplay();
+            }
+
+            square() {
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = (current * current).toString();
+                this.updateDisplay();
+            }
+
+            cube() {
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = (current * current * current).toString();
+                this.updateDisplay();
+            }
+
+            inverse() {
+                const current = parseFloat(this.currentOperand);
+                if (current === 0) {
+                    this.currentOperand = 'Error';
+                } else {
+                    this.currentOperand = (1 / current).toString();
+                }
+                this.updateDisplay();
+            }
+
+
+            factorial() {
+                const n = parseInt(this.currentOperand);
+                if (n < 0) {
+                    this.currentOperand = 'Error';
+                } else if (n > 170) {
+                    this.currentOperand = 'Infinity';
+                } else {
+                    let result = 1;
+                    for (let i = 2; i <= n; i++) {
+                        result *= i;
+                    }
+                    this.currentOperand = result.toString();
+                }
+                this.updateDisplay();
+            }
+
+            combination(n, r) {
+                if (r > n || r < 0 || n < 0) return NaN;
+                return this.factorialCalc(n) / (this.factorialCalc(r) * this.factorialCalc(n - r));
+            }
+
+            permutation(n, r) {
+                if (r > n || r < 0 || n < 0) return NaN;
+                return this.factorialCalc(n) / this.factorialCalc(n - r);
+            }
+
+            factorialCalc(n) {
+                if (n < 0) return NaN;
+                if (n === 0) return 1;
+                let result = 1;
+                for (let i = 2; i <= n; i++) {
+                    result *= i;
+                }
+                return result;
+            }
+
+            pi() {
+                this.currentOperand = Math.PI.toString();
+                this.updateDisplay();
+            }
+
+            e() {
+                this.currentOperand = Math.E.toString();
+                this.updateDisplay();
+            }
+
+            // Other functions
+            abs() {
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = Math.abs(current).toString();
+                this.updateDisplay();
+            }
+
+            percentage() {
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = (current / 100).toString();
+                this.updateDisplay();
+            }
+
+            negate() {
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = (current * -1).toString();
+                this.updateDisplay();
+            }
+
+            scientificNotation() {
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = current.toExponential();
+                this.updateDisplay();
+            }
+
+            // Memory functions
+            memoryStore() {
+                this.memory = parseFloat(this.currentOperand);
+            }
+
+            memoryRecall() {
+                this.currentOperand = this.memory.toString();
+                this.updateDisplay();
+            }
+
+            memoryClear() {
+                this.memory = 0;
+            }
+
+            memoryAdd() {
+                this.memory += parseFloat(this.currentOperand);
+            }
+
+      
+            toggleAngleMode() {
+                this.angleMode = this.angleMode === 'DEG' ? 'RAD' : 'DEG';
+                this.angleModeElement.textContent = this.angleMode;
+            }
+
+
+            getDisplayNumber(number) {
+                if (number === 'Error' || number === 'Infinity') return number;
+                
+                const stringNumber = number.toString();
+                if (stringNumber.includes('e')) return stringNumber;
+                
+                const integerDigits = parseFloat(stringNumber.split('.')[0]);
+                const decimalDigits = stringNumber.split('.')[1];
+                let integerDisplay;
+                
+                if (isNaN(integerDigits)) {
+                    integerDisplay = '';
+                } else {
+                    integerDisplay = integerDigits.toLocaleString('en', {
+                        maximumFractionDigits: 0
+                    });
+                }
+                
+                if (decimalDigits != null) {
+                    return `${integerDisplay}.${decimalDigits}`;
+                } else {
+                    return integerDisplay;
+                }
+            }
+
+            updateDisplay() {
+                this.currentOperandElement.innerText = this.getDisplayNumber(this.currentOperand);
+                if (this.operation != null) {
+                    this.previousOperandElement.innerText = 
+                        `${this.getDisplayNumber(this.previousOperand)} ${this.operation}`;
+                } else {
+                    this.previousOperandElement.innerText = '';
+                }
+            }
+        }
+
+        const previousOperandElement = document.getElementById('previousOperand');
+        const currentOperandElement = document.getElementById('currentOperand');
+        const angleModeElement = document.getElementById('angleMode');
+        const calculator = new ScientificCalculator(previousOperandElement, currentOperandElement, angleModeElement);
+
+      
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') {
+                calculator.appendNumber(e.key);
+            } else if (e.key === '.') {
+                calculator.appendNumber('.');
+            } else if (e.key === '+') {
+                calculator.chooseOperation('+');
+            } else if (e.key === '-') {
+                calculator.chooseOperation('-');
+            } else if (e.key === '*') {
+                calculator.chooseOperation('×');
+            } else if (e.key === '/') {
+                e.preventDefault();
+                calculator.chooseOperation('÷');
+            } else if (e.key === 'Enter' || e.key === '=') {
+                calculator.compute();
+            } else if (e.key === 'Backspace') {
+                calculator.delete();
+            } else if (e.key === 'Escape') {
+                calculator.clear();
+            }
+        });
+    </script>
+</body>
+</html>
